@@ -27,10 +27,22 @@ def main():
         result = review_with_ai(y)
         print(f"Review result:\n{result}\n")
         try:
-            parsed = json.loads(result)
-            all_findings.extend(parsed)
-        except Exception:
-            print("⚠️ Could not parse structured response")
+            # Try to extract JSON from the response if it's embedded in other text
+            import re
+            json_match = re.search(r'\[.*\]', result, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(0)
+                parsed = json.loads(json_str)
+                all_findings.extend(parsed)
+            else:
+                parsed = json.loads(result)
+                all_findings.extend(parsed)
+        except json.JSONDecodeError as e:
+            print(f"⚠️ Could not parse structured response: {e}")
+            print(f"Raw response: {result}")
+        except Exception as e:
+            print(f"⚠️ Unexpected error parsing response: {e}")
+            print(f"Raw response: {result}")
 
     criticals = [f for f in all_findings if f["severity"] in ("CRITICAL", "HIGH")]
     if criticals:
