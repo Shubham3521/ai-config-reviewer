@@ -1,0 +1,11 @@
+Given the original YAML:
+
+{yaml}
+
+and the following detected issues:
+
+{issues}
+
+Generate a corrected YAML that fixes all HIGH or CRITICAL issues.
+Output only the fixed YAML — no commentary or markdown code fences.
+

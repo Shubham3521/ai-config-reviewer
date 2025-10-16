@@ -1,0 +1,8 @@
+Check whether the following YAML is syntactically valid and compliant with Kubernetes schema standards.
+
+If valid, respond exactly with: VALID
+If invalid, respond with: INVALID - <brief reason>
+
+YAML:
+{yaml}
+
