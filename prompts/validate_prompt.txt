@@ -1,7 +1,8 @@
 Check whether the following YAML is syntactically valid and compliant with Kubernetes schema standards.
 
-If valid, respond exactly with: VALID
-If invalid, respond with: INVALID - <brief reason>
+If the YAML is a valid Kubernetes resource (Deployment, Service, ConfigMap, etc.), respond with: VALID
+If the YAML is syntactically valid but not a Kubernetes resource, respond with: SKIP - Not a Kubernetes resource
+If the YAML is invalid, respond with: INVALID - <brief reason>
 
 YAML:
 {yaml}

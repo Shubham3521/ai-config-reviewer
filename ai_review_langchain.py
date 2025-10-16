@@ -75,8 +75,13 @@ def read_yaml_files(path="."):
     for root, _, files in os.walk(path):
         for f in files:
             if f.endswith((".yaml", ".yml")):
-                with open(os.path.join(root, f)) as fp:
-                    yamls.append((os.path.join(root, f), fp.read()))
+                file_path = os.path.join(root, f)
+                # Skip GitHub Actions workflows and other non-Kubernetes files
+                if ".github/workflows/" in file_path or "workflow" in f.lower():
+                    print(f"⏭️  Skipping non-Kubernetes file: {file_path}")
+                    continue
+                with open(file_path) as fp:
+                    yamls.append((file_path, fp.read()))
     return yamls
 
 def run_pipeline():
@@ -86,9 +91,6 @@ def run_pipeline():
         print(f"\n=== Analyzing {path} ===")
         try:
             output = pipeline({"yaml": content})
-            
-            # Debug: Print what the AI actually returned
-            print(f"DEBUG - Raw issues_json: {repr(output['issues_json'])}")
             
             try:
                 # Try to parse the JSON directly
@@ -126,6 +128,12 @@ def run_pipeline():
             if validation.startswith("content='") and validation.endswith("'"):
                 validation = validation[9:-1]  # Remove 'content=' and trailing quote
             print(f"\nValidation result: {validation}")
+            
+            # Skip files that are not Kubernetes resources
+            if "SKIP" in validation or "Not a Kubernetes resource" in validation:
+                print("⏭️  Skipping non-Kubernetes file")
+                continue
+                
             results.append({"file": path, "issues": issues, "fixed": output["fixed_yaml"], "validation": output["validation"]})
         except Exception as e:
             print(f"❌ Error processing {path}: {e}")
