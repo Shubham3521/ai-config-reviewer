@@ -124,18 +124,31 @@ Respond with ONLY JSON:
 
 if __name__ == "__main__":
     pr_number = os.getenv("GITHUB_EVENT_NUMBER")
+    
+    # Test mode - if no PR number, run in test mode
     if not pr_number:
-        print("❌ No PR number found in environment")
-        exit(1)
+        print("🧪 Running in test mode (no PR number found)")
+        print("This script is designed to run in GitHub Actions workflow context.")
+        print("To test locally, you can:")
+        print("1. Set GITHUB_EVENT_NUMBER environment variable")
+        print("2. Or run the auto_pr_generator.py instead")
+        print("\nExample usage in GitHub Actions:")
+        print("  - Triggered on pull_request events")
+        print("  - Analyzes PR changes for auto-approval safety")
+        print("  - Sets AUTO_APPROVE environment variable")
+        exit(0)
     
     try:
         analyzer = AutoApproveAnalyzer()
         is_safe = analyzer.analyze_pr(int(pr_number))
         
-        # Set environment variable for next step
-        print(f"AUTO_APPROVE={'true' if is_safe else 'false'}")
-        with open(os.environ['GITHUB_ENV'], 'a') as f:
-            f.write(f"AUTO_APPROVE={'true' if is_safe else 'false'}\n")
+        # Set environment variable for next step (only in GitHub Actions)
+        if 'GITHUB_ENV' in os.environ:
+            print(f"AUTO_APPROVE={'true' if is_safe else 'false'}")
+            with open(os.environ['GITHUB_ENV'], 'a') as f:
+                f.write(f"AUTO_APPROVE={'true' if is_safe else 'false'}\n")
+        else:
+            print(f"Local test result: AUTO_APPROVE={'true' if is_safe else 'false'}")
         
         if is_safe:
             print("🤖 This PR will be auto-approved")
@@ -145,6 +158,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"❌ Error analyzing PR: {e}")
         # Default to manual review on error
-        with open(os.environ['GITHUB_ENV'], 'a') as f:
-            f.write("AUTO_APPROVE=false\n")
+        if 'GITHUB_ENV' in os.environ:
+            with open(os.environ['GITHUB_ENV'], 'a') as f:
+                f.write("AUTO_APPROVE=false\n")
         exit(1)
