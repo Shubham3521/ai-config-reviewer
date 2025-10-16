@@ -23,17 +23,26 @@ def get_pipeline():
     def detect_issues(inputs):
         """Detect issues in YAML"""
         response = detect_prompt | llm
-        return {"issues_json": response.invoke(inputs)}
+        result = response.invoke(inputs)
+        # Extract content from AIMessage if needed
+        content = result.content if hasattr(result, 'content') else str(result)
+        return {"issues_json": content}
 
     def fix_yaml(inputs):
         """Fix YAML based on detected issues"""
         response = fix_prompt | llm
-        return {"fixed_yaml": response.invoke(inputs)}
+        result = response.invoke(inputs)
+        # Extract content from AIMessage if needed
+        content = result.content if hasattr(result, 'content') else str(result)
+        return {"fixed_yaml": content}
 
     def validate_yaml(inputs):
         """Validate the YAML"""
         response = validate_prompt | llm
-        return {"validation": response.invoke(inputs)}
+        result = response.invoke(inputs)
+        # Extract content from AIMessage if needed
+        content = result.content if hasattr(result, 'content') else str(result)
+        return {"validation": content}
 
     # --- Combined pipeline using modern syntax ---
     def run_analysis(inputs):
@@ -86,8 +95,17 @@ def run_pipeline():
             print("Issues found:")
             print(json.dumps(issues, indent=2))
             print("\nSuggested fix:")
-            print(output["fixed_yaml"])
-            print(f"\nValidation result: {output['validation']}")
+            # Clean up the output by removing 'content=' prefix if present
+            fixed_yaml = output["fixed_yaml"]
+            if fixed_yaml.startswith("content='") and fixed_yaml.endswith("'"):
+                fixed_yaml = fixed_yaml[9:-1]  # Remove 'content=' and trailing quote
+            print(fixed_yaml)
+            
+            # Clean up validation result
+            validation = output["validation"]
+            if validation.startswith("content='") and validation.endswith("'"):
+                validation = validation[9:-1]  # Remove 'content=' and trailing quote
+            print(f"\nValidation result: {validation}")
             results.append({"file": path, "issues": issues, "fixed": output["fixed_yaml"], "validation": output["validation"]})
         except Exception as e:
             print(f"❌ Error processing {path}: {e}")
