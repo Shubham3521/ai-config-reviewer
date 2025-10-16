@@ -1,0 +1,74 @@
+# Auto PR Generator Configuration
+auto_pr:
+  # Enable/disable auto PR generation
+  enabled: true
+  
+  # Schedule for automatic scanning (cron format)
+  schedule: "0 2 * * *"  # Daily at 2 AM UTC
+  
+  # File patterns to include/exclude
+  include_patterns:
+    - "**/*.yaml"
+    - "**/*.yml"
+  
+  exclude_patterns:
+    - "**/.github/workflows/**"
+    - "**/node_modules/**"
+    - "**/vendor/**"
+  
+  # Auto-approval settings
+  auto_approve:
+    enabled: true
+    # Only auto-approve if no HIGH severity issues
+    max_severity: "MEDIUM"
+    # Maximum lines changed for auto-approval
+    max_changes: 50
+    
+  # PR settings
+  pr:
+    # Branch naming pattern
+    branch_pattern: "security-fix-{filename}-{timestamp}"
+    # PR title pattern
+    title_pattern: "🔒 Security fixes for {filename}"
+    # Auto-assign reviewers
+    assignees: []
+    # Labels to add
+    labels:
+      - "security"
+      - "automated"
+      - "ai-generated"
+
+# Security issue severity mapping
+severity_mapping:
+  CRITICAL:
+    - "hardcoded-secrets"
+    - "privileged-containers"
+    - "root-containers"
+  HIGH:
+    - "missing-resource-limits"
+    - "missing-security-context"
+    - "insecure-image-tags"
+  MEDIUM:
+    - "missing-health-checks"
+    - "missing-resource-requests"
+    - "deprecated-api-versions"
+  LOW:
+    - "missing-labels"
+    - "missing-annotations"
+    - "style-issues"
+
+# Auto-fix rules
+auto_fix:
+  # Issues that can be automatically fixed
+  safe_fixes:
+    - "hardcoded-secrets"  # Replace with secretKeyRef
+    - "missing-resource-limits"  # Add default limits
+    - "missing-health-checks"  # Add default probes
+    - "missing-security-context"  # Add secure defaults
+  
+  # Issues that require manual review
+  manual_review:
+    - "privileged-containers"
+    - "root-containers"
+    - "insecure-image-tags"
+    - "deprecated-api-versions"
