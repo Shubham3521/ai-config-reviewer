@@ -30,3 +30,4 @@ spec:
           securityContext:
             privileged: true
             runAsUser: 1
+# Trigger auto-PR generation
