@@ -29,4 +29,4 @@ spec:
           # ❌ Privileged container
           securityContext:
             privileged: true
-            runAsUser: 0
+            runAsUser: 1
