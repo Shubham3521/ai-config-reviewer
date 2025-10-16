@@ -1,20 +1,33 @@
-echo '
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: test-app
+  name: insecure-app
+  labels:
+    app: insecure
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: test
+      app: insecure
   template:
     metadata:
       labels:
-        app: test
+        app: insecure
     spec:
       containers:
-        - name: test
-          image: nginx
-' > test-deploy.yaml
-
+        - name: insecure-container
+          image: nginx:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          # ❌ Hardcoded secret
+          env:
+            - name: DB_PASSWORD
+              value: "supersecret123"
+          # ❌ Missing resource requests/limits
+          # ❌ Missing liveness/readiness probes
+          # ❌ Privileged container
+          securityContext:
+            privileged: true
+            runAsUser: 1
+# Trigger auto-PR generation

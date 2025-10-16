@@ -1,10 +1,14 @@
 You are an expert DevSecOps auditor. 
 Review the following Kubernetes YAML for security, performance, and reliability issues.
 
-For each issue, respond in JSON format:
+IMPORTANT: You must respond ONLY with valid JSON in the exact format specified below. Do not include any other text, explanations, or formatting.
+
+Required JSON format:
 [
   {"severity": "CRITICAL|HIGH|MEDIUM|LOW", "issue": "...", "recommendation": "..."}
 ]
+
+If no issues are found, respond with an empty array: []
 
 Example checks:
 - Missing resource requests/limits

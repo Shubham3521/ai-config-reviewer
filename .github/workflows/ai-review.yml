@@ -1,21 +1,25 @@
-name: AI Config Review
+name: AI Config Review (LangChain)
+
 on:
   pull_request:
-    paths:
-      - '**/*.yaml'
-      - '**/*.yml'
+    branches: [ main ]
+
 jobs:
-  ai_review:
+  ai-review:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      - run: pip install -r requirements.txt
-      - name: Run AI YAML Review
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run LangChain AI Review
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: python ai_review.py
+        run: python ai_review_langchain.py
 
