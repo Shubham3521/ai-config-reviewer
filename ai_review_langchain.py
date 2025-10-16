@@ -86,10 +86,30 @@ def run_pipeline():
         print(f"\n=== Analyzing {path} ===")
         try:
             output = pipeline({"yaml": content})
+            
+            # Debug: Print what the AI actually returned
+            print(f"DEBUG - Raw issues_json: {repr(output['issues_json'])}")
+            
             try:
+                # Try to parse the JSON directly
                 issues = json.loads(output["issues_json"])
-            except Exception as e:
+            except json.JSONDecodeError as e:
                 print(f"⚠️ Could not parse issues JSON: {e}")
+                print(f"Raw response: {output['issues_json']}")
+                
+                # Try to extract JSON from the response if it's embedded in other text
+                import re
+                json_match = re.search(r'\[.*?\]', output["issues_json"], re.DOTALL)
+                if json_match:
+                    try:
+                        issues = json.loads(json_match.group(0))
+                        print("✅ Successfully extracted JSON from response")
+                    except:
+                        issues = []
+                else:
+                    issues = []
+            except Exception as e:
+                print(f"⚠️ Unexpected error parsing JSON: {e}")
                 issues = []
 
             print("Issues found:")
