@@ -1,33 +1,37 @@
 import os, json, yaml
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain, SequentialChain
 
 # --- Setup ---
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 base_path = os.path.join(os.path.dirname(__file__), "prompts")
 
 def load_prompt(name):
     with open(os.path.join(base_path, name)) as f:
         return f.read()
 
-# --- Prompt templates ---
-detect_prompt = PromptTemplate(input_variables=["yaml"], template=load_prompt("detect_prompt.txt"))
-fix_prompt = PromptTemplate(input_variables=["yaml", "issues"], template=load_prompt("fix_prompt.txt"))
-validate_prompt = PromptTemplate(input_variables=["yaml"], template=load_prompt("validate_prompt.txt"))
+def get_pipeline():
+    """Initialize the pipeline with LLM - called when needed to avoid API key issues at import"""
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    
+    # --- Prompt templates ---
+    detect_prompt = PromptTemplate(input_variables=["yaml"], template=load_prompt("detect_prompt.txt"))
+    fix_prompt = PromptTemplate(input_variables=["yaml", "issues"], template=load_prompt("fix_prompt.txt"))
+    validate_prompt = PromptTemplate(input_variables=["yaml"], template=load_prompt("validate_prompt.txt"))
 
-# --- Chains ---
-detect_chain = LLMChain(llm=llm, prompt=detect_prompt, output_key="issues_json")
-fix_chain = LLMChain(llm=llm, prompt=fix_prompt, output_key="fixed_yaml")
-validate_chain = LLMChain(llm=llm, prompt=validate_prompt, output_key="validation")
+    # --- Chains ---
+    detect_chain = LLMChain(llm=llm, prompt=detect_prompt, output_key="issues_json")
+    fix_chain = LLMChain(llm=llm, prompt=fix_prompt, output_key="fixed_yaml")
+    validate_chain = LLMChain(llm=llm, prompt=validate_prompt, output_key="validation")
 
-# --- Combined pipeline ---
-pipeline = SequentialChain(
-    chains=[detect_chain, fix_chain, validate_chain],
-    input_variables=["yaml"],
-    output_variables=["issues_json", "fixed_yaml", "validation"],
-    verbose=True,
-)
+    # --- Combined pipeline ---
+    pipeline = SequentialChain(
+        chains=[detect_chain, fix_chain, validate_chain],
+        input_variables=["yaml"],
+        output_variables=["issues_json", "fixed_yaml", "validation"],
+        verbose=True,
+    )
+    return pipeline
 
 # --- Helpers ---
 def read_yaml_files(path="."):
@@ -40,6 +44,7 @@ def read_yaml_files(path="."):
     return yamls
 
 def run_pipeline():
+    pipeline = get_pipeline()  # Initialize pipeline when needed
     results = []
     for path, content in read_yaml_files("."):
         print(f"\n=== Analyzing {path} ===")

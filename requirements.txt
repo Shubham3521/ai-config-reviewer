@@ -1,4 +1,6 @@
 openai>=1.45.0
 pyyaml
-langchain
+langchain>=0.1.0
+langchain-openai>=0.1.0
+langchain-community>=0.1.0
 requests
